@@ -1,0 +1,57 @@
+// ==========================================
+// ITE183 - Web Systems and Technologies
+// Laboratory 2: WebSocket Server
+// ==========================================
+
+include("lib/http.bzg");
+
+var server = http(8000);
+
+
+// ==========================================
+// HTTP EVENT HANDLERS
+// ==========================================
+
+var notFound = readFile("public/404.html");
+
+server.get = function (path, data){
+    print("get loc:" + path);
+
+    if(path == "/"){
+        server.sendFile("public/index.html");
+    }
+    else{
+        server.sendResponse(notFound, "text/html", 404);
+    }
+};
+
+
+// ==========================================
+// WEBSOCKET (WS) EVENT HANDLERS
+// ==========================================
+
+// Triggered when a client successfully connects via ws://
+server.onConnect = function (clientId) {
+    print("WebSocket connected! Client ID: " + clientId);
+
+    // Send a welcome message to this specific client
+    server.send(clientId, "Welcome to WebSocket server!");
+};
+
+// Triggered when a client sends a message
+server.onData = function (message, clientId) {
+    print("Received from Client " + clientId + ": " + message);
+
+    // Echo the message back to the sender
+    //server.send(clientId, "Echo: " + message);
+
+    // Or broadcast it to everyone connected
+    server.sendAll("User " + clientId + " says: " + message);
+};
+
+// Triggered when a client disconnects
+server.onDisconnect = function (clientId) {
+    print("WebSocket disconnected! Client ID: " + clientId);
+};
+
+server.run();
